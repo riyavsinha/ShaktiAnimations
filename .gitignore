@@ -1,0 +1,5 @@
+venv/
+mfput.log
+.idea/
+__pycache__/
+media/
