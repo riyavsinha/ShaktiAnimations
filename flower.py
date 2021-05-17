@@ -20,7 +20,7 @@ class FlowerMode(Enum):
 
 class FlowerBuddy(SVGMobject):
 
-    def __init__(self, **kwargs):
+    def __init__(self, color=PINK, core_color='#feaaf8', **kwargs):
         # Initial properties
         self.parts_named = False
         self.flower_mode: FlowerMode = FlowerMode.INIT
@@ -33,7 +33,8 @@ class FlowerBuddy(SVGMobject):
         SVGMobject.__init__(self, file_name=svg_file, **kwargs)
         # Name parts
         # Post-load initializations
-        self.color = PINK  # after load since SVGMobject init resets
+        self.color = color  # after load since SVGMobject init resets
+        self.core_color = core_color
         if self.start_corner is not None:
             self.to_corner(self.start_corner)
         self.init_colors()
@@ -42,6 +43,7 @@ class FlowerBuddy(SVGMobject):
         self.remove(*self.pupils)
         self.remove(*self.sclera)
         self.add(self.eyes)
+        self.mouth.smile()
 
     def init_colors(self):
         if not self.parts_named:
@@ -49,7 +51,10 @@ class FlowerBuddy(SVGMobject):
         SVGMobject.init_colors(self)
         self.body.set_color(self.color)
         self.mouth.set_fill(BLACK)
-        self.core.set_color('#feaaf8')
+        try:
+            self.core.set_color(self.core_color)
+        except AttributeError:
+            self.core.set_color('#feaaf8')
         self.eyes.initialize_colors()
         return self
 

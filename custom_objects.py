@@ -1,4 +1,6 @@
-from manim import Rectangle, Circle, Arc, VGroup, Line
+import os
+
+from manim import Rectangle, Circle, Arc, VGroup, Line, SVGMobject, Ellipse, Tex
 from manim.constants import *
 from manim.utils.color import *
 
@@ -24,3 +26,13 @@ def decentralized_web():
     sat_4 = Circle(radius=.35, color=WHITE).move_to(center).shift(DOWN+LEFT*.75)
     edge_4 = Line(center, sat_4)
     return VGroup(center, sat_1, edge_1, sat_2, edge_2, sat_3, edge_3, edge_3_1, sat_4, edge_4)
+
+def etc_dollar():
+    etc = SVGMobject(os.path.join(os.getcwd(), 'assets', 'etc_logo.svg')).scale(.35)
+    rect = Rectangle('#38b238', 1.1, 1.8)
+    return VGroup(etc, rect)
+
+def dollar():
+    dol = Tex(r'\$', color='#85bb65').scale(1.4)
+    rect = Rectangle('#85bb65', 1.1, 1.8)
+    return VGroup(dol, rect)
