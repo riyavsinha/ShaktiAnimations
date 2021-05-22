@@ -9,6 +9,7 @@ from manim.utils.space_ops import get_norm
 import os
 from enum import Enum
 
+
 class FlowerMode(Enum):
     INIT = 'INIT'
     SMILE = 'SMILE'
@@ -18,9 +19,25 @@ class FlowerMode(Enum):
     SURPRISE = 'SURPRISE'
 
 
+FlowerColor = {
+    "PINK": {
+        "core": "#feaaf8",
+        "body": PINK
+    },
+    "PURPLE": {
+        "core": "#ca94f2",
+        "body": "#b547d0"
+    },
+    "ORANGE": {
+        "core": "#f0c788",
+        "body": "#e49928"
+    }
+}
+
+
 class FlowerBuddy(SVGMobject):
 
-    def __init__(self, color=PINK, core_color='#feaaf8', **kwargs):
+    def __init__(self, color: FlowerColor, **kwargs):
         # Initial properties
         self.parts_named = False
         self.flower_mode: FlowerMode = FlowerMode.INIT
@@ -33,8 +50,8 @@ class FlowerBuddy(SVGMobject):
         SVGMobject.__init__(self, file_name=svg_file, **kwargs)
         # Name parts
         # Post-load initializations
-        self.color = color  # after load since SVGMobject init resets
-        self.core_color = core_color
+        self.color = color["body"]  # after load since SVGMobject init resets
+        self.core_color = color["core"]
         if self.start_corner is not None:
             self.to_corner(self.start_corner)
         self.init_colors()
@@ -226,6 +243,7 @@ class FlowerMouth(SVGMobject):
         middle_x = self.__middle_x()
         middle_to_edge = middle_x - mouth_left_x
         return abs(self.__center_distance_x(x) - middle_to_edge)
+
 
 class FlowerEyes(VGroup):
     def __init__(self, sclera, pupils):
