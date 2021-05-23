@@ -6,7 +6,7 @@ from flower_animations import Blink, EyeSmile
 from utils import BraceWithText
 
 
-class DefScene(Scene):
+class DefSingleVoterScene(Scene):
     def construct(self):
         voters = flower_army()
         self.play((FadeIn(voters)))
@@ -230,6 +230,150 @@ class DefScene(Scene):
         self.play(FadeOut(VGroup(u_group, props, h3, h3_dividers)))
 
 
+class DefBallotScene(Scene):
+    def construct(self):
+        voters = flower_army().shift(UP * .5)
+        self.play((FadeIn(voters)))
+        B = ballots()
+        [B[i].next_to(voters[i], DOWN) for i in range(6)]
+        self.play(FadeIn(B))
+        B_def = Tex(r'Ballot Profile:\\The set of ballots for all voters').shift(UP * 3.3)
+        B_math = MathTex(r'B = (B_i)_{i \in I}').next_to(B_def, DOWN)
+        B_text = VGroup(B_def, B_math).scale(.8)
+        B_box = SurroundingRectangle(B_text, buff=MED_SMALL_BUFF)
+        B_brace = BraceWithText(B, r'$B$')
+        self.play(Write(B_def), Write(B_math), ShowCreation(B_box))
+        self.play(FadeIn(B_brace))
+        self.wait(2)
+        self.play(FadeOut(VGroup(B_def, B_math, B_box, B_brace)))
+        Bmi_def = Tex(r'Ballot Profile without $i$:\\The set of ballots excluding voter $i$').shift(UP * 3.3)
+        Bmi_math = MathTex(r'B_{-i} = B \setminus B_i').next_to(Bmi_def, DOWN)
+        Bmi_text = VGroup(Bmi_def, Bmi_math).scale(.8)
+        Bmi_box = SurroundingRectangle(Bmi_text, buff=MED_SMALL_BUFF)
+        Bmi_brace = BraceWithText(B, r'$B_{-4}$')
+        self.play(Write(Bmi_def), Write(Bmi_math), ShowCreation(Bmi_box))
+        self.play(FadeOut(VGroup(voters[3], B[3])))
+        self.play(FadeIn(Bmi_brace))
+        self.wait(2)
+        self.play(FadeOut(VGroup(Bmi_def, Bmi_math, Bmi_box, Bmi_brace)))
+        self.play(FadeIn(VGroup(voters[3], B[3])))
+        score_def = Tex(
+            r'Score of Proposal $x$:\\The score of a proposal is the sum of scores given by each voter').shift(UP * 3.3)
+        score_math = MathTex(r's(x,B) =', r'\sum_{i \in I} s_i(x)', r'=',
+                             r'\sum_{l \in L} l \cdot \#\{i \in I : x \in H_i^{(l)}\}').next_to(score_def, DOWN)
+        score_text = VGroup(score_def, score_math).scale(.7)
+        score_box = SurroundingRectangle(score_text, buff=MED_SMALL_BUFF)
+        self.play(Write(score_def), Write(score_math), ShowCreation(score_box))
+        self.play(indicate_in(score_math[1]))
+        self.play(FadeOut(B))
+        self.play(voters.animate.shift(DOWN * 1.5))
+        score_boards = VGroup(*[hold_obj(score_board(v), voters[i]) for i, v in enumerate([-2, 1, 3, 3, 1, 3])])
+        self.play(FadeIn(score_boards))
+        score_eq = MathTex(r'-2 + 1 + 3 + 3 + 1 + 3', r'= 1(-2) + 2(1) + 3(3)').move_to(
+            middle_of_point(score_boards.get_top(), score_box.get_bottom()))
+        self.play(Write(score_eq[0]))
+        self.play(indicate_in(score_math[3]), indicate_out(score_math[1]))
+        voters_with_boards = VGroup(*map(lambda x: VGroup(*x), zip(list(voters), list(score_boards))))
+        self.play(voters_with_boards.animate.shift(DOWN).scale(.6))
+        h_score_boards = VGroup(*[score_board(v) for v in range(-3, 4)]).arrange(buff=LARGE_BUFF).next_to(score_eq,
+                                                                                                          DOWN)
+        self.play(FadeIn(h_score_boards))
+        self.play(voters_with_boards[0].animate.next_to(h_score_boards[1], DOWN),
+                  voters_with_boards[4].animate.next_to(h_score_boards[4], DOWN),
+                  voters_with_boards[5].animate.next_to(h_score_boards[6], DOWN))
+        self.play(voters_with_boards[1].animate.next_to(voters_with_boards[4], DOWN, buff=0),
+                  voters_with_boards[3].animate.next_to(voters_with_boards[5], DOWN, buff=0))
+        self.play(voters_with_boards[2].animate.next_to(voters_with_boards[3], DOWN, buff=0))
+        self.play(FadeOut(score_boards))
+        self.play(Write(score_eq[1]))
+        self.wait(2)
+        self.play(FadeOut(VGroup(score_def, score_math, score_box, score_eq, h_score_boards, voters)))
+
+
+class DefScene(Scene):
+    def construct(self):
+        # Acceptable Proposals
+        acc_def = Tex(r'Acceptable Candidate:\\A proposal whose score is at least 10\% of the number of voters').shift(
+            UP * 3.3)
+        acc_math = MathTex(r's(x,B) \geq 0.1 \cdot |I|').next_to(acc_def, DOWN)
+        acc_text = VGroup(acc_def, acc_math).scale(.9)
+        acc_box = SurroundingRectangle(acc_text, buff=MED_SMALL_BUFF)
+        self.play(Write(acc_def), Write(acc_math), ShowCreation(acc_box))
+        self.wait(2)
+        accex_voters = VGroup(Tex('100'), FlowerBuddy(FlowerColor['PINK']).scale(.5)).arrange().next_to(acc_box, DOWN,
+                                                                                                        buff=MED_LARGE_BUFF)
+        self.play(FadeIn(accex_voters))
+        self.play(FadeOut(VGroup(acc_def, acc_math, acc_box, accex_voters)))
+        # Common Budget
+        cb_def = Tex(r'Common Budget $M$: Total budget for funding projects').shift(
+            UP * 3.3)
+        cb_math = Tex(r'Budget of $x$: $m(x) (\leq M)$').next_to(cb_def, DOWN)
+        cb_text = VGroup(cb_def, cb_math).scale(.9)
+        cb_box = SurroundingRectangle(cb_text, buff=MED_SMALL_BUFF)
+        self.play(Write(cb_def), Write(cb_math), ShowCreation(cb_box))
+        self.wait(2)
+        M_box = Rectangle(WHITE, 1, 12)
+        M_text = Tex(r'Budget $M$ = 12').move_to((M_box))
+        M = VGroup(M_box, M_text)
+        ma = prop_budget('A', 3)
+        mb = prop_budget('B', 5)
+        mc = prop_budget('C', 4)
+        md = prop_budget('D', 6)
+        me = prop_budget('E', 4)
+        mf = prop_budget('F', 2)
+        m_top_row = VGroup(ma, mc, me).arrange().next_to(M, DOWN)
+        m_bot_row = VGroup(mb, md, mf).arrange().next_to(m_top_row, DOWN)
+        self.play(FadeIn(M))
+        self.play(FadeIn(m_top_row))
+        self.play(FadeIn(m_bot_row))
+        self.play(FadeOut(VGroup(cb_def, cb_math, cb_box)))
+        # Exhausting the budget
+        exhaust_def = Tex(
+            r'"Exhausting the Common Budget $M$": A subset of proposals that are within the common budget, but have no room for any other proposal').shift(
+            UP * 3.4)
+        exhaust_math = MathTex(r'S \subset X: &\sum_{x \in S} m(x) \leq M \\',
+                               r'\forall y \in X \setminus S: &\sum_{x \in S} m(x) + m(y) > M').next_to(exhaust_def,
+                                                                                                        DOWN)
+        exhaust_text = VGroup(exhaust_def, exhaust_math).scale(.6)
+        exhaust_box = SurroundingRectangle(exhaust_text, buff=MED_SMALL_BUFF)
+        self.play(Write(exhaust_def), Write(exhaust_math), ShowCreation(exhaust_box))
+        self.wait(2)
+        self.play(indicate_in(exhaust_math[0]))
+        ms = VGroup(ma, mb, mc, md, me, mf)
+        self.play(ma.animate.move_to(M.get_left(), aligned_edge=LEFT).shift(DOWN * .14))
+        self.play(mc.animate.next_to(ma, RIGHT, buff=0))
+        self.play(indicate_out(exhaust_math[0]), indicate_in(exhaust_math[1]))
+        self.play(mf.animate.next_to(mc, RIGHT, buff=0))
+        self.play(Transform(me, me.generate_target().next_to(mf, RIGHT, buff=0), rate_func=there_and_back, run_time=2))
+        self.play(indicate_out(exhaust_math[1]))
+        self.play(FadeOut(VGroup(exhaust_def, exhaust_math, exhaust_box, ms)))
+
+
+class DefProcedureScene(Scene):
+    def construct(self):
+        bseq_def = Tex('Ballot Sequence')
+        bseq_eq = MathTex(r'&x_1, x_2, \dots, x_k \in X\\',
+                          r'&s(x_1, B) \geq s(x_2, B) \geq \dots \geq s(x_k, B)').next_to(bseq_def, DOWN)
+        bseq_text = VGroup(bseq_def, bseq_eq).shift(UP * 3.3)
+        bseq_box = SurroundingRectangle(bseq_text, buff=MED_SMALL_BUFF)
+        self.play(Write(bseq_text), ShowCreation(bseq_box))
+        prop_score_cost = [
+            ['A', 1, 3],
+            ['B', 2, 5],
+            ['C', 4, 4],
+            ['D', 2, 6],
+            ['E', 3, 4],
+            ['F', 3, 2]
+        ]
+        table = text_table(prop_score_cost).shift(DOWN*1.75 + RIGHT*2)
+        table_row = VGroup(Tex('Proposals'), Tex('Scores'), Tex('Costs')).arrange(DOWN, buff=LARGE_BUFF).next_to(table, LEFT, buff=LARGE_BUFF)
+        self.play(FadeIn(VGroup(table, table_row)))
+        sorted_prop_score_cost = sorted(table, key=lambda x: int(x[1].get_tex_string()), reverse=True)
+        curlocs = list(map(lambda x: x.get_center(), table))
+        self.play(*[r.animate.move_to(curlocs[sorted_prop_score_cost.index(r)]) for r in table])
+
+
+
 def shift_prop(scene: Scene, m: Mobject, t: Point):
     scene.play(m.animate.set_color(YELLOW))
     scene.play(CounterclockwiseTransform(m, m.generate_target().next_to(t, DOWN)))
@@ -268,6 +412,16 @@ def flower_army():
     return VGroup(*map(lambda col: FlowerBuddy(col), list(FlowerColor.values()) * 2)).arrange().scale(.8)
 
 
+def ballots():
+    return VGroup(*map(lambda x: ballot(x + 1), range(6))).arrange()
+
+
+def ballot(number: int):
+    paper = Rectangle(WHITE, 2, 1.5)
+    text = MathTex(r'B_' + str(number)).move_to(paper).scale(.6)
+    return VGroup(paper, text)
+
+
 def proposals():
     return VGroup(*map(lambda x: proposal(x + 1), range(6))).arrange()
 
@@ -276,3 +430,28 @@ def proposal(number: int):
     paper = Rectangle(WHITE, 2, 1.5)
     text = Tex(r'Proposal\\' + chr(ord('@') + number)).move_to(paper).scale(.6)
     return VGroup(paper, text)
+
+
+def score_board(number: int):
+    stick = Line(DOWN * .25, ORIGIN)
+    board = Rectangle(r'#e3e3e3', .5, .5, fill_opacity=1).move_to(stick.get_top(), aligned_edge=DOWN)
+    text = Tex(str(number), color='#6c00a1').move_to(board)
+    return VGroup(stick, board, text)
+
+
+def hold_obj(obj, flower):
+    obj.move_to(flower.right_arm.get_center(), aligned_edge=DOWN).shift(RIGHT * .2 + UP * .1)
+    return obj
+
+
+def prop_budget(letter, amt):
+    rect = Rectangle('#880000', 1, amt, stroke_color=WHITE, stroke_width=1, fill_opacity=1)
+    prop_txt = Tex(letter).scale(.5).next_to(rect, DOWN, buff=SMALL_BUFF)
+    cost_txt = Tex(str(amt)).move_to(rect)
+    return VGroup(rect, prop_txt, cost_txt)
+
+def text_table(arr):
+    return VGroup(
+        *map(lambda row: VGroup(*map(lambda s: Tex(str(s)), row)).arrange(DOWN, buff=LARGE_BUFF),
+             arr)
+    ).arrange(buff=LARGE_BUFF)
